@@ -41,6 +41,57 @@ module.exports = class Repository {
   }
 
   /** 
+ *
+ * Find data using pagination
+ * 
+ * @param {type}   object.limit Limit items to list
+ * @param {type}   object.offset List items offset
+ * @param {type}   object.orderBy Order by query
+ *
+ * @return {type} List of entities
+ */
+  async findWithPage(options = {
+    orderBy: [],
+    offset: 1,
+    limit: 10
+  }) {
+
+    options.orderBy = options.orderBy || []
+    options.offset = options.offset || 1
+    options.limit = options.limit || 10
+
+    const tableFields = this.dataMapper.tableFields()
+
+    if (!options.orderBy || typeof options.orderBy === "object" && !Array.isArray(options.orderBy) && isEmpty(options.orderBy)) throw "order by is invalid"
+
+    let query = this.runner
+      .select(tableFields)
+      .offset(options.offset)
+      .limit(options.limit)
+
+    if (!isEmpty(options.orderBy)) query = query.orderBy(options.orderBy)
+
+    const entities = []
+    const ret = await query
+
+    for (const row of ret) {
+      if (row === undefined) continue
+      entities.push(this.dataMapper.toEntity(row))
+    }
+
+    let count = await this.runner
+      .count('* as count')
+      .first()
+
+    return {
+      total: count,
+      perPage: options.limit,
+      totalPages: Math.ceil(count / options.limit),
+      data: entities
+    }
+  }
+
+  /** 
   *
   * Find all method
   * 
