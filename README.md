@@ -292,7 +292,7 @@ Retrieving and Persist:
     - [ ] order by
 - [X] find All
     - [X] order by
-- [ ] find with pages
+- [X] find with pages
 - [ ] first
 - [ ] last
 
